@@ -118,18 +118,14 @@ const planFields = [
 ];
 
 const totalPackagePrice = computed(() => {
-  // Cek apakah packageData dan listPlan sudah ada
   if (packageData.value && packageData.value.listPlan) {
 
-    // Gunakan .reduce() untuk menjumlahkan semua 'price' di dalam listPlan
     return packageData.value.listPlan.reduce((total, plan) => {
-      // Pastikan harga adalah angka, jika tidak, anggap 0
       const price = typeof plan.price === 'number' ? plan.price : 0;
       return total + price;
-    }, 0); // Nilai awal total adalah 0
+    }, 0);
   }
 
-  // Jika tidak ada listPlan, tampilkan harga default (yang mungkin 0)
   return packageData.value?.price || 0;
 });
 

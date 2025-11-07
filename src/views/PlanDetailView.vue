@@ -2,7 +2,7 @@
 import { ref, onMounted, reactive, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { getPlanById, updatePlan } from '@/services/plan.service';
-import { getFilteredActivities } from '@/services/activity.service';
+import { getFilteredActivities} from '@/services/activity.service';
 import { addActivityToPlan, updateOrderedQuantity, removeActivityFromPlan } from '@/services/orderedQuantity.service';
 import {
   BContainer, BCard, BRow, BCol, BButton, BAlert, BSpinner, BTable, BBadge,
@@ -268,7 +268,6 @@ onMounted(fetchPlan);
       </BForm>
     </BModal>
 
-    <!-- MODAL KONFIRMASI DELETE ORDERED QUANTITY -->
     <BModal v-model="showDeleteOQModal" title="Confirm Removal" @ok="handleDeleteOQ">
       Are you sure you want to remove "{{ oqToDelete?.activityName }}" from this plan?
     </BModal>

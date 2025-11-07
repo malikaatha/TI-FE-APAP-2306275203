@@ -18,3 +18,14 @@ export const getFilteredActivities = async (planId: string) => {
         throw error;
     }
 };
+
+export const getAllActivities = async () => {
+  try {
+    const response = await apiClient.get('/activities');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all activities:', error);
+    throw error;
+  }
+};
+

@@ -33,7 +33,6 @@ const columns = [
   {
     data: 'status',
     title: 'Status',
-    // Gunakan render function di sini
     render: function(data, type, row) {
       if (type === 'display') {
         const variant = data === 'Pending' ? 'warning' : 'success';
