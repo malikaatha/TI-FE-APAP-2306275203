@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPackageById, updatePackage, deletePackage, processPackage } from '@/services/package.service';
 import { createPlan, deletePlan } from '@/services/plan.service';
@@ -117,6 +117,22 @@ const planFields = [
   { key: 'actions', label: 'Actions' }
 ];
 
+const totalPackagePrice = computed(() => {
+  // Cek apakah packageData dan listPlan sudah ada
+  if (packageData.value && packageData.value.listPlan) {
+
+    // Gunakan .reduce() untuk menjumlahkan semua 'price' di dalam listPlan
+    return packageData.value.listPlan.reduce((total, plan) => {
+      // Pastikan harga adalah angka, jika tidak, anggap 0
+      const price = typeof plan.price === 'number' ? plan.price : 0;
+      return total + price;
+    }, 0); // Nilai awal total adalah 0
+  }
+
+  // Jika tidak ada listPlan, tampilkan harga default (yang mungkin 0)
+  return packageData.value?.price || 0;
+});
+
 onMounted(fetchPackage);
 </script>
 
@@ -152,7 +168,8 @@ onMounted(fetchPackage);
           <BCol md="4" class="mt-3"><p class="mb-2"><strong>End Date:</strong></p><p>{{ new Date(packageData.endDate).toLocaleDateString() }}</p></BCol>
           <BCol md="4" class="mt-3"><p class="mb-2"><strong>Quota:</strong></p><p>{{ packageData.quota }}</p></BCol>
           <BCol md="4" class="mt-3"><p class="mb-2"><strong>Status:</strong></p><BBadge :variant="packageData.status === 'Pending' ? 'warning' : 'success'">{{ packageData.status }}</BBadge></BCol>
-          <BCol md="12" class="mt-3"><p class="mb-2"><strong>Total Price:</strong></p><p class="h5">Rp {{ new Intl.NumberFormat('id-ID').format(packageData.price) }}</p></BCol>
+          <BCol md="4" class="mt-3"><p class="mb-2"><strong>Status:</strong></p><BBadge :variant="packageData.status === 'Pending' ? 'warning' : 'success'">{{ packageData.status }}</BBadge></BCol>
+          <BCol md="12" class="mt-3"><p class="mb-2"><strong>Total Price:</strong></p><p class="h5">Rp {{ new Intl.NumberFormat('id-ID').format(totalPackagePrice) }}</p></BCol>
         </BRow>
       </BCard>
       <BCard v-else header="Edit Package" class="mb-4">
