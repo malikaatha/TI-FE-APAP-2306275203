@@ -1,11 +1,36 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { getAllPackages } from '@/services/package.service';
-import { BContainer, BButton, BTable, BSpinner, BAlert } from 'bootstrap-vue-next';
+import { BContainer, BButton, BSpinner, BAlert, BBadge } from 'bootstrap-vue-next';
+
+import DataTable from 'datatables.net-vue3';
+import DataTablesCore from 'datatables.net-bs5';
+
+DataTable.use(DataTablesCore);
 
 const packages = ref([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+
+const columns = [
+  { data: 'packageName', title: 'Package Name' },
+  { data: 'status', title: 'Status' },
+  { data: 'price', title: 'Price',
+    render: (data: any) => `Rp ${new Intl.NumberFormat('id-ID').format(data)}`
+  },
+  { data: 'userId', title: 'User ID' },
+  { data: 'id', title: 'Actions', orderable: false,
+    render: (data: any, type: any, row: any) => {
+
+      return `<button class="btn btn-info btn-sm" data-id="${data}">View</button>`;
+    }
+  }
+];
+
+const dtOptions = {
+  responsive: true,
+  select: true,
+};
 
 const fetchPackages = async () => {
   try {
@@ -19,17 +44,7 @@ const fetchPackages = async () => {
   }
 };
 
-onMounted(() => {
-  fetchPackages();
-});
-
-const fields = [
-  { key: 'packageName', label: 'Package Name', sortable: true },
-  { key: 'status', label: 'Status' },
-  { key: 'price', label: 'Price' },
-  { key: 'userId', label: 'User ID' },
-  { key: 'actions', label: 'Actions' }
-];
+onMounted(fetchPackages);
 </script>
 
 <template>
@@ -47,18 +62,34 @@ const fields = [
       <p>Loading packages...</p>
     </div>
 
-    <BTable
-      v-if="!isLoading && !error"
-      :items="packages"
-      :fields="fields"
-      striped
-      hover
-      responsive
-    >
-      <template #cell(actions)="data">
-        <BButton size="sm" variant="info">View</BButton>
-      </template>
-    </BTable>
+    <div v-if="!isLoading && !error">
+      <DataTable
+        :columns="columns"
+        :data="packages"
+        :options="dtOptions"
+        class="table table-striped table-hover"
+        width="100%"
+      >
+        <thead>
+          <tr>
+            <th>Package Name</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>User ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <template #status="props">
+          <BBadge :variant="props.data === 'Pending' ? 'warning' : 'success'">
+            {{ props.data }}
+          </BBadge>
+        </template>
+      </DataTable>
+    </div>
 
   </BContainer>
 </template>
+
+<style>
+@import 'datatables.net-bs5';
+</style>
