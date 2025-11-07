@@ -19,3 +19,42 @@ export const getAllPackages = async () => {
   }
 };
 
+export const getPackageById = async (id: string) => {
+  try {
+    const response = await apiClient.get(`/package/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching package with id ${id}:`, error);
+    throw error;
+  }
+};
+
+export const updatePackage = async (id: string, packageData: any) => {
+  try {
+    const response = await apiClient.put(`/package/${id}/edit`, packageData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating package with id ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deletePackage = async (id: string) => {
+  try {
+    const response = await apiClient.delete(`/package/${id}/delete`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting package with id ${id}:`, error);
+    throw error;
+  }
+};
+
+export const processPackage = async (id: string) => {
+  try {
+    const response = await apiClient.put(`/package/${id}/process`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error processing package with id ${id}:`, error);
+    throw error;
+  }
+};

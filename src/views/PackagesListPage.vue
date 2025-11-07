@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue';
 import { getAllPackages } from '@/services/package.service';
 import { BContainer, BButton, BSpinner, BAlert, BBadge } from 'bootstrap-vue-next';
-
+import { useRouter } from 'vue-router';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 
 DataTable.use(DataTablesCore);
+
+const router = useRouter();
 
 const packages = ref([]);
 const isLoading = ref(true);
@@ -15,16 +17,13 @@ const error = ref<string | null>(null);
 const columns = [
   { data: 'packageName', title: 'Package Name' },
   { data: 'status', title: 'Status' },
-  { data: 'price', title: 'Price',
+  {
+    data: 'price',
+    title: 'Price',
     render: (data: any) => `Rp ${new Intl.NumberFormat('id-ID').format(data)}`
   },
   { data: 'userId', title: 'User ID' },
-  { data: 'id', title: 'Actions', orderable: false,
-    render: (data: any, type: any, row: any) => {
-
-      return `<button class="btn btn-info btn-sm" data-id="${data}">View</button>`;
-    }
-  }
+  { data: 'id', title: 'Actions', orderable: false }
 ];
 
 const dtOptions = {
@@ -42,6 +41,10 @@ const fetchPackages = async () => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const viewPackage = (packageId: string) => {
+  router.push({ name: 'package-detail', params: { id: packageId } });
 };
 
 onMounted(fetchPackages);
@@ -70,19 +73,15 @@ onMounted(fetchPackages);
         class="table table-striped table-hover"
         width="100%"
       >
-        <thead>
-          <tr>
-            <th>Package Name</th>
-            <th>Status</th>
-            <th>Price</th>
-            <th>User ID</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <template #status="props">
-          <BBadge :variant="props.data === 'Pending' ? 'warning' : 'success'">
-            {{ props.data }}
+        <template #column-1="slotProps">
+          <BBadge :variant="slotProps.data === 'Pending' ? 'warning' : 'success'">
+            {{ slotProps.data }}
           </BBadge>
+        </template>
+        <template #column-4="slotProps">
+          <BButton size="sm" variant="info" @click="viewPackage(slotProps.cellData)">
+            View
+          </BButton>
         </template>
       </DataTable>
     </div>
