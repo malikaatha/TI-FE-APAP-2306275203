@@ -1,32 +1,34 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPackageById, updatePackage, deletePackage, processPackage } from '@/services/package.service';
+import { createPlan, deletePlan } from '@/services/plan.service';
 import {
-  BContainer, BCard, BRow, BCol,
-  BButton, BAlert, BSpinner,
-  BForm, BFormGroup, BFormInput, BModal
+  BContainer, BCard, BRow, BCol, BButton, BAlert, BSpinner, BTable,
+  BForm, BFormGroup, BFormInput, BFormSelect, BModal
 } from 'bootstrap-vue-next';
 
 const route = useRoute();
 const router = useRouter();
+const packageId = route.params.id as string;
 
 const packageData = ref<any>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
 const isEditMode = ref(false);
-const editFormData = reactive({
-  packageName: '',
-  quota: 0,
-  startDate: '',
-  endDate: ''
-});
+const editFormData = reactive({ packageName: '', quota: 0, startDate: '', endDate: '' });
 
 const showDeleteModal = ref(false);
 const showProcessModal = ref(false);
 
-const packageId = route.params.id as string;
+const showPlanModal = ref(false);
+const planForm = reactive({ planName: '', activityType: null, startDate: '', endDate: '', startLocation: '', endLocation: '' });
+const activityTypes = [{ value: null, text: 'Please select an activity type' }, 'Flight', 'Accommodation', 'Vehicle Rental'];
+const locations = ['DKI Jakarta (Provinsi)', 'Bali (Provinsi)', 'Jawa Barat (Provinsi)', 'Yogyakarta (Provinsi)'];
+
+const planToDelete = ref<any>(null);
+const showDeletePlanModal = ref(false);
 
 const fetchPackage = async () => {
   try {
@@ -54,21 +56,17 @@ const handleUpdate = async () => {
     await updatePackage(packageId, editFormData);
     isEditMode.value = false;
     fetchPackage();
-  } catch (err) {
-    alert('Update failed! Check console for details.');
-    console.error(err);
+  } catch (err: any) {
+    alert(`Update failed: ${err.response?.data || err.message}`);
   }
 };
 
 const handleDelete = async () => {
   try {
     await deletePackage(packageId);
-    showDeleteModal.value = false;
-    alert('Package deleted successfully!');
     router.push('/packages');
-  } catch (err) {
-    alert('Delete failed! The package might have plans or is already processed.');
-    console.error(err);
+  } catch (err: any) {
+    alert(`Delete failed: ${err.response?.data || err.message}`);
   }
 };
 
@@ -77,12 +75,52 @@ const handleProcess = async () => {
     await processPackage(packageId);
     showProcessModal.value = false;
     fetchPackage();
-    alert('Package processed successfully!');
-  } catch (err) {
-    alert('Process failed! Make sure all plans are fulfilled.');
-    console.error(err);
+  } catch (err: any) {
+    alert(`Process failed: ${err.response?.data || err.message}`);
   }
 };
+
+const handleCreatePlan = async () => {
+  try {
+    await createPlan(packageId, planForm);
+    showPlanModal.value = false;
+    Object.assign(planForm, { planName: '', activityType: null, startDate: '', endDate: '', startLocation: '', endLocation: '' });
+    fetchPackage();
+  } catch (err: any) {
+    alert(`Failed to create plan: ${err.response?.data || err.message}`);
+  }
+};
+
+const openDeletePlanConfirmation = (plan: any) => {
+  planToDelete.value = plan;
+  showDeletePlanModal.value = true;
+};
+
+const handleDeletePlan = async () => {
+  if (planToDelete.value) {
+    try {
+      await deletePlan(planToDelete.value.id);
+      showDeletePlanModal.value = false;
+      planToDelete.value = null;
+      fetchPackage();
+    } catch (err: any) {
+      alert(`Failed to delete plan: ${err.response?.data || err.message}`);
+    }
+  }
+};
+
+const planFields = [
+  { key: 'planName', label: 'Plan Name' },
+  { key: 'activityType', label: 'Activity Type' },
+  { key: 'price', label: 'Price' },
+  { key: 'startDate', label: 'Start Date' },
+  { key: 'endDate', label: 'End Date' },
+  { key: 'startLocation', label: 'Start Location' },
+  { key: 'endLocation', label: 'End Location' },
+  { key: 'status', label: 'Status' },
+  { key: 'activities', label: 'Activities' },
+  { key: 'actions', label: 'Actions' }
+];
 
 onMounted(fetchPackage);
 </script>
@@ -90,62 +128,82 @@ onMounted(fetchPackage);
 <template>
   <BContainer>
     <div v-if="isLoading" class="text-center mt-5"><BSpinner /></div>
-
     <BAlert v-else-if="error" variant="danger" show>{{ error }}</BAlert>
-
     <div v-else-if="packageData">
-      <BButton variant="outline-secondary" to="/packages" class="mb-3">
-        &larr; Back to Packages
-      </BButton>
 
-      <BCard v-if="!isEditMode" :header="`Package Details: ${packageData.packageName}`">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">{{ packageData.packageName }}</h1>
+        <div v-if="packageData.status === 'Pending'">
+          <BButton variant="secondary" @click="enterEditMode">Edit Package</BButton>
+          <BButton variant="danger" class="ms-2" @click="showDeleteModal = true">Delete Package</BButton>
+          <BButton variant="success" class="ms-2" @click="showProcessModal = true">Process Package</BButton>
+        </div>
+      </div>
+
+      <BCard header="Package Information" class="mb-4">
         <BRow>
-          <BCol md="6">
-            <p><strong>User ID:</strong> {{ packageData.userId }}</p>
-            <p><strong>Quota:</strong> {{ packageData.quota }}</p>
-            <p><strong>Status:</strong> {{ packageData.status }}</p>
+          <BCol md="4">
+            <p class="mb-2"><strong>Package Name:</strong></p>
+            <p>{{ packageData.packageName }}</p>
           </BCol>
-          <BCol md="6">
-            <p><strong>Start Date:</strong> {{ new Date(packageData.startDate).toLocaleString() }}</p>
-            <p><strong>End Date:</strong> {{ new Date(packageData.endDate).toLocaleString() }}</p>
-            <p><strong>Total Price:</strong> Rp {{ new Intl.NumberFormat('id-ID').format(packageData.price) }}</p>
+          <BCol md="4">
+            <p class="mb-2"><strong>User ID:</strong></p>
+            <p>{{ packageData.userId }}</p>
+          </BCol>
+          <BCol md="4">
+            <p class="mb-2"><strong>Start Date:</strong></p>
+            <p>{{ new Date(packageData.startDate).toLocaleDateString() }}</p>
+          </BCol>
+          <BCol md="4" class="mt-3">
+            <p class="mb-2"><strong>End Date:</strong></p>
+            <p>{{ new Date(packageData.endDate).toLocaleDateString() }}</p>
+          </BCol>
+          <BCol md="4" class="mt-3">
+            <p class="mb-2"><strong>Quota:</strong></p>
+            <p>{{ packageData.quota }}</p>
+          </BCol>
+          <BCol md="4" class="mt-3">
+            <p class="mb-2"><strong>Status:</strong></p>
+            <BBadge :variant="packageData.status === 'Pending' ? 'warning' : 'success'">{{ packageData.status }}</BBadge>
+          </BCol>
+          <BCol md="12" class="mt-3">
+            <p class="mb-2"><strong>Total Price:</strong></p>
+            <p class="h5">Rp {{ new Intl.NumberFormat('id-ID').format(packageData.price) }}</p>
           </BCol>
         </BRow>
-        <template #footer>
-          <BButton variant="warning" @click="enterEditMode">Edit</BButton>
-          <BButton variant="danger" class="ms-2" @click="showDeleteModal = true">Delete</BButton>
-          <BButton variant="success" class="ms-2" @click="showProcessModal = true">Process</BButton>
-        </template>
       </BCard>
 
-      <BCard v-else header="Edit Package">
-        <BForm @submit.prevent="handleUpdate">
-          <BFormGroup label="Package Name:" label-for="packageName">
-            <BFormInput id="packageName" v-model="editFormData.packageName" required />
-          </BFormGroup>
-          <BFormGroup label="Quota:" label-for="quota" class="mt-3">
-            <BFormInput id="quota" v-model="editFormData.quota" type="number" required />
-          </BFormGroup>
-          <BFormGroup label="Start Date:" label-for="startDate" class="mt-3">
-            <BFormInput id="startDate" v-model="editFormData.startDate" type="datetime-local" required />
-          </BFormGroup>
-          <BFormGroup label="End Date:" label-for="endDate" class="mt-3">
-            <BFormInput id="endDate" v-model="editFormData.endDate" type="datetime-local" required />
-          </BFormGroup>
-          <div class="mt-4">
-            <BButton type="submit" variant="primary">Save Changes</BButton>
-            <BButton variant="secondary" class="ms-2" @click="isEditMode = false">Cancel</BButton>
-          </div>
-        </BForm>
+      <BCard header="Plans for Package">
+        <BTable :items="packageData.listPlan" :fields="planFields" striped hover responsive>
+          <template #cell(price)="data">Rp {{ new Intl.NumberFormat('id-ID').format(data.item.price) }}</template>
+          <template #cell(startDate)="data">{{ new Date(data.item.startDate).toLocaleString() }}</template>
+          <template #cell(endDate)="data">{{ new Date(data.item.endDate).toLocaleString() }}</template>
+          <template #cell(status)="data">
+            <BBadge :variant="data.item.status === 'Fulfilled' ? 'success' : 'warning'">{{ data.item.status }}</BBadge>
+          </template>
+          <template #cell(activities)="data">{{ data.item.listOrderedQuantity.length }}</template>
+          <template #cell(actions)="data">
+            <BButton size="sm" variant="info" :to="{ name: 'plan-detail', params: { id: data.item.id } }">View</BButton>
+          </template>
+        </BTable>
       </BCard>
     </div>
-
-    <BModal v-model="showDeleteModal" title="Confirm Deletion" @ok="handleDelete">
-      Are you sure you want to delete this package? This action cannot be undone.
+    <BModal v-model="showDeleteModal" title="Confirm Package Deletion" @ok="handleDelete">Are you sure you want to delete this package?</BModal>
+    <BModal v-model="showProcessModal" title="Confirm Package Process" @ok="handleProcess">Are you sure you want to process this package?</BModal>
+    <BModal v-model="showPlanModal" title="Create New Plan" hide-footer>
+      <BForm @submit.prevent="handleCreatePlan">
+        <BFormGroup label="Plan Name:"><BFormInput v-model="planForm.planName" required /></BFormGroup>
+        <BFormGroup label="Activity Type:" class="mt-3"><BFormSelect v-model="planForm.activityType" :options="activityTypes" required /></BFormGroup>
+        <BFormGroup label="Start Date:" class="mt-3"><BFormInput v-model="planForm.startDate" type="datetime-local" required /></BFormGroup>
+        <BFormGroup label="End Date:" class="mt-3"><BFormInput v-model="planForm.endDate" type="datetime-local" required /></BFormGroup>
+        <BFormGroup label="Start Location:" class="mt-3"><BFormSelect v-model="planForm.startLocation" :options="locations" required /></BFormGroup>
+        <BFormGroup label="End Location:" class="mt-3"><BFormSelect v-model="planForm.endLocation" :options="locations" required /></BFormGroup>
+        <div class="d-flex justify-content-end mt-4">
+          <BButton variant="secondary" @click="showPlanModal = false">Cancel</BButton>
+          <BButton type="submit" variant="primary" class="ms-2">Create Plan</BButton>
+        </div>
+      </BForm>
     </BModal>
-
-    <BModal v-model="showProcessModal" title="Confirm Process" @ok="handleProcess">
-      Are you sure you want to process this package? This will book all activities.
-    </BModal>
+    <BModal v-model="showDeletePlanModal" title="Confirm Plan Deletion" @ok="handleDeletePlan">Are you sure you want to delete the plan "{{ planToDelete?.planName }}"?</BModal>
   </BContainer>
 </template>
