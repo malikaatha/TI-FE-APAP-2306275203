@@ -34,29 +34,36 @@ const router = createRouter({
       name: 'about',
       component: () => import('../views/AboutView.vue')
     },
-    // RUTE BARU (Fitur 6)
     {
       path: '/packages/:id/edit',
       name: 'package-edit',
-      component: () => import('../views/PackageEditView.vue') // Halaman baru
+      component: () => import('../views/PackageEditView.vue')
     },
-    // RUTE BARU (Fitur 8)
     {
       path: '/packages/:id/plans/create',
       name: 'plan-create',
-      component: () => import('../views/PlanCreateView.vue') // Halaman baru
+      component: () => import('../views/PlanCreateView.vue')
     },
     {
       path: '/plans/:id',
       name: 'plan-detail',
       component: () => import('../views/PlanDetailView.vue')
     },
-    // RUTE BARU (Fitur 10)
     {
       path: '/plans/:id/edit',
       name: 'plan-edit',
-      component: () => import('../views/PlanEditView.vue') // Halaman baru
+      component: () => import('../views/PlanEditView.vue')
     },
+        {
+      path: '/about',
+      name: 'about',
+      component: () => import('../views/AboutView.vue')
+    },
+    {
+      path: '/statistics',
+      name: 'statistics',
+      component: () => import('../views/StatisticsView.vue')
+    }
   ]
 })
 
