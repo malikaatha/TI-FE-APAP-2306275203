@@ -5,39 +5,53 @@ import { BContainer, BButton, BSpinner, BAlert, BBadge } from 'bootstrap-vue-nex
 import { useRouter } from 'vue-router';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
+import type { Package } from '@/types/package.types';
 
 DataTable.use(DataTablesCore);
 
 const router = useRouter();
 
-const packages = ref([]);
+const packages = ref<Package[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
+const dtOptions = {
+  dom: 'Bfrtip',
+  pageLength: 10,
+  responsive: true,
+  language: {
+    lengthMenu: 'Display _MENU_ records per page',
+    zeroRecords: 'No records found',
+    info: 'Showing page _PAGE_ of _PAGES_',
+    infoEmpty: 'No records available',
+    infoFiltered: '(filtered from _MAX_ total records)'
+  }
+};
+
 const columns = [
   { data: 'packageName', title: 'Package Name' },
-  { data: 'status', title: 'Status' },
+  {
+    data: 'status',
+    title: 'Status',
+    render: (data: 'OPEN' | 'CLOSED') =>
+      `<span class="badge ${data === 'OPEN' ? 'text-bg-success' : 'text-bg-danger'}">${data}</span>`
+  },
   {
     data: 'price',
     title: 'Price',
-    render: (data: any) => `Rp ${new Intl.NumberFormat('id-ID').format(data)}`
+    render: (data: number) => `Rp ${new Intl.NumberFormat('id-ID').format(data)}`
   },
   { data: 'userId', title: 'User ID' },
   { data: 'id', title: 'Actions', orderable: false }
 ];
-
-const dtOptions = {
-  responsive: true,
-  select: true,
-};
 
 const fetchPackages = async () => {
   try {
     isLoading.value = true;
     error.value = null;
     packages.value = await getAllPackages();
-  } catch (err: any) {
-    error.value = err.message || 'Failed to fetch packages.';
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to fetch packages';
   } finally {
     isLoading.value = false;
   }
@@ -54,9 +68,11 @@ onMounted(fetchPackages);
   <BContainer>
     <h1 class="mb-4">All Tour Packages</h1>
 
-    <div class="mb-3">
-      <BButton variant="primary">Create New Package</BButton>
-    </div>
+<div class="mb-3">
+  <BButton variant="primary" :to="{ name: 'package-create' }">
+    Create New Package
+  </BButton>
+</div>
 
     <BAlert v-if="error" variant="danger" show>{{ error }}</BAlert>
 
@@ -74,8 +90,8 @@ onMounted(fetchPackages);
         width="100%"
       >
         <template #column-1="slotProps">
-          <BBadge :variant="slotProps.data === 'Pending' ? 'warning' : 'success'">
-            {{ slotProps.data }}
+          <BBadge :variant="slotProps.data === 'PENDING' ? 'warning' : 'success'">
+            {{ slotProps.data === 'PENDING' ? 'Pending' : 'Processed' }}
           </BBadge>
         </template>
         <template #column-4="slotProps">

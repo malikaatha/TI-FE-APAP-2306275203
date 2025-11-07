@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPackageById, updatePackage, deletePackage, processPackage } from '@/services/package.service';
 import { createPlan, deletePlan } from '@/services/plan.service';
 import {
-  BContainer, BCard, BRow, BCol, BButton, BAlert, BSpinner, BTable,
+  BContainer, BCard, BRow, BCol, BButton, BAlert, BSpinner, BTable, BBadge,
   BForm, BFormGroup, BFormInput, BFormSelect, BModal
 } from 'bootstrap-vue-next';
 
@@ -111,14 +111,9 @@ const handleDeletePlan = async () => {
 
 const planFields = [
   { key: 'planName', label: 'Plan Name' },
-  { key: 'activityType', label: 'Activity Type' },
-  { key: 'price', label: 'Price' },
-  { key: 'startDate', label: 'Start Date' },
-  { key: 'endDate', label: 'End Date' },
-  { key: 'startLocation', label: 'Start Location' },
-  { key: 'endLocation', label: 'End Location' },
+  { key: 'activityType', label: 'Type' },
   { key: 'status', label: 'Status' },
-  { key: 'activities', label: 'Activities' },
+  { key: 'price', label: 'Price' },
   { key: 'actions', label: 'Actions' }
 ];
 
@@ -129,6 +124,7 @@ onMounted(fetchPackage);
   <BContainer>
     <div v-if="isLoading" class="text-center mt-5"><BSpinner /></div>
     <BAlert v-else-if="error" variant="danger" show>{{ error }}</BAlert>
+
     <div v-else-if="packageData">
 
       <div class="d-flex justify-content-between align-items-center mb-4">
@@ -140,57 +136,52 @@ onMounted(fetchPackage);
         </div>
       </div>
 
-      <BCard header="Package Information" class="mb-4">
+      <BCard v-if="!isEditMode" header="Package Information" class="mb-4">
         <BRow>
-          <BCol md="4">
-            <p class="mb-2"><strong>Package Name:</strong></p>
-            <p>{{ packageData.packageName }}</p>
-          </BCol>
-          <BCol md="4">
-            <p class="mb-2"><strong>User ID:</strong></p>
-            <p>{{ packageData.userId }}</p>
-          </BCol>
-          <BCol md="4">
-            <p class="mb-2"><strong>Start Date:</strong></p>
-            <p>{{ new Date(packageData.startDate).toLocaleDateString() }}</p>
-          </BCol>
-          <BCol md="4" class="mt-3">
-            <p class="mb-2"><strong>End Date:</strong></p>
-            <p>{{ new Date(packageData.endDate).toLocaleDateString() }}</p>
-          </BCol>
-          <BCol md="4" class="mt-3">
-            <p class="mb-2"><strong>Quota:</strong></p>
-            <p>{{ packageData.quota }}</p>
-          </BCol>
-          <BCol md="4" class="mt-3">
-            <p class="mb-2"><strong>Status:</strong></p>
-            <BBadge :variant="packageData.status === 'Pending' ? 'warning' : 'success'">{{ packageData.status }}</BBadge>
-          </BCol>
-          <BCol md="12" class="mt-3">
-            <p class="mb-2"><strong>Total Price:</strong></p>
-            <p class="h5">Rp {{ new Intl.NumberFormat('id-ID').format(packageData.price) }}</p>
-          </BCol>
+          <BCol md="4"><p class="mb-2"><strong>Package Name:</strong></p><p>{{ packageData.packageName }}</p></BCol>
+          <BCol md="4"><p class="mb-2"><strong>User ID:</strong></p><p>{{ packageData.userId }}</p></BCol>
+          <BCol md="4"><p class="mb-2"><strong>Start Date:</strong></p><p>{{ new Date(packageData.startDate).toLocaleDateString() }}</p></BCol>
+          <BCol md="4" class="mt-3"><p class="mb-2"><strong>End Date:</strong></p><p>{{ new Date(packageData.endDate).toLocaleDateString() }}</p></BCol>
+          <BCol md="4" class="mt-3"><p class="mb-2"><strong>Quota:</strong></p><p>{{ packageData.quota }}</p></BCol>
+          <BCol md="4" class="mt-3"><p class="mb-2"><strong>Status:</strong></p><BBadge :variant="packageData.status === 'Pending' ? 'warning' : 'success'">{{ packageData.status }}</BBadge></BCol>
+          <BCol md="12" class="mt-3"><p class="mb-2"><strong>Total Price:</strong></p><p class="h5">Rp {{ new Intl.NumberFormat('id-ID').format(packageData.price) }}</p></BCol>
         </BRow>
       </BCard>
+      <BCard v-else header="Edit Package" class="mb-4">
+        <BForm @submit.prevent="handleUpdate">
+          <BFormGroup label="Package Name:" label-for="packageName" class="mb-3"><BFormInput id="packageName" v-model="editFormData.packageName" required /></BFormGroup>
+          <BFormGroup label="Quota:" label-for="quota" class="mb-3"><BFormInput id="quota" v-model="editFormData.quota" type="number" required /></BFormGroup>
+          <BFormGroup label="Start Date:" label-for="startDate" class="mb-3"><BFormInput id="startDate" v-model="editFormData.startDate" type="datetime-local" required /></BFormGroup>
+          <BFormGroup label="End Date:" label-for="endDate" class="mb-3"><BFormInput id="endDate" v-model="editFormData.endDate" type="datetime-local" required /></BFormGroup>
+          <div class="mt-4">
+            <BButton type="submit" variant="primary">Save Changes</BButton>
+            <BButton variant="secondary" class="ms-2" @click="isEditMode = false">Cancel</BButton>
+          </div>
+        </BForm>
+      </BCard>
 
-      <BCard header="Plans for Package">
+      <BCard>
+        <template #header>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="h5 mb-0">Plans for Package</span>
+            <BButton variant="success" size="sm" @click="showPlanModal = true" :disabled="packageData.status !== 'Pending'">+ Create New Plan</BButton>
+          </div>
+        </template>
         <BTable :items="packageData.listPlan" :fields="planFields" striped hover responsive>
           <template #cell(price)="data">Rp {{ new Intl.NumberFormat('id-ID').format(data.item.price) }}</template>
-          <template #cell(startDate)="data">{{ new Date(data.item.startDate).toLocaleString() }}</template>
-          <template #cell(endDate)="data">{{ new Date(data.item.endDate).toLocaleString() }}</template>
-          <template #cell(status)="data">
-            <BBadge :variant="data.item.status === 'Fulfilled' ? 'success' : 'warning'">{{ data.item.status }}</BBadge>
-          </template>
-          <template #cell(activities)="data">{{ data.item.listOrderedQuantity.length }}</template>
+          <template #cell(status)="data"><BBadge :variant="data.item.status === 'Fulfilled' ? 'success' : 'warning'">{{ data.item.status }}</BBadge></template>
           <template #cell(actions)="data">
             <BButton size="sm" variant="info" :to="{ name: 'plan-detail', params: { id: data.item.id } }">View</BButton>
+            <BButton size="sm" variant="danger" class="ms-2" @click="openDeletePlanConfirmation(data.item)" :disabled="packageData.status !== 'Pending'">Delete</BButton>
           </template>
         </BTable>
+        <p v-if="!packageData.listPlan || packageData.listPlan.length === 0" class="text-muted">No plans have been added to this package yet.</p>
       </BCard>
+
     </div>
     <BModal v-model="showDeleteModal" title="Confirm Package Deletion" @ok="handleDelete">Are you sure you want to delete this package?</BModal>
     <BModal v-model="showProcessModal" title="Confirm Package Process" @ok="handleProcess">Are you sure you want to process this package?</BModal>
-    <BModal v-model="showPlanModal" title="Create New Plan" hide-footer>
+    <BModal v-model="showPlanModal" title="Create New Plan" footer-class="d-none">
       <BForm @submit.prevent="handleCreatePlan">
         <BFormGroup label="Plan Name:"><BFormInput v-model="planForm.planName" required /></BFormGroup>
         <BFormGroup label="Activity Type:" class="mt-3"><BFormSelect v-model="planForm.activityType" :options="activityTypes" required /></BFormGroup>
@@ -205,5 +196,6 @@ onMounted(fetchPackage);
       </BForm>
     </BModal>
     <BModal v-model="showDeletePlanModal" title="Confirm Plan Deletion" @ok="handleDeletePlan">Are you sure you want to delete the plan "{{ planToDelete?.planName }}"?</BModal>
+
   </BContainer>
 </template>

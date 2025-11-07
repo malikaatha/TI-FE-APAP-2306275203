@@ -15,6 +15,11 @@ const router = createRouter({
       component: () => import('../views/PackagesListPage.vue')
     },
     {
+      path: '/packages/create',
+      name: 'package-create',
+      component: () => import('../views/PackageCreateView.vue')
+    },
+    {
       path: '/packages/:id',
       name: 'package-detail',
       component: () => import('../views/PackageDetailView.vue')
@@ -28,16 +33,6 @@ const router = createRouter({
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue')
-    },
-    {
-      path: '/packages',
-      name: 'packages-list',
-      component: () => import('../views/PackagesListPage.vue')
-    },
-    {
-      path: '/packages/:id',
-      name: 'package-detail',
-      component: () => import('../views/PackageDetailView.vue')
     },
     // RUTE BARU (Fitur 6)
     {

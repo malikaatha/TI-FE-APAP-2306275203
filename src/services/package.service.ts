@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { Package, CreatePackageDto, UpdatePackageDto } from '@/types/package.types';
 
 const API_URL = 'http://localhost:8080';
 
@@ -9,7 +10,17 @@ const apiClient = axios.create({
   }
 });
 
-export const getAllPackages = async () => {
+export const createPackage = async (packageData: CreatePackageDto): Promise<Package> => {
+  try {
+    const response = await apiClient.post('/package/create', packageData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating package:', error);
+    throw error;
+  }
+};
+
+export const getAllPackages = async (): Promise<Package[]> => {
   try {
     const response = await apiClient.get('/package');
     return response.data;
@@ -19,7 +30,7 @@ export const getAllPackages = async () => {
   }
 };
 
-export const getPackageById = async (id: string) => {
+export const getPackageById = async (id: string): Promise<Package> => {
   try {
     const response = await apiClient.get(`/package/${id}`);
     return response.data;
@@ -29,7 +40,7 @@ export const getPackageById = async (id: string) => {
   }
 };
 
-export const updatePackage = async (id: string, packageData: any) => {
+export const updatePackage = async (id: string, packageData: UpdatePackageDto): Promise<Package> => {
   try {
     const response = await apiClient.put(`/package/${id}/edit`, packageData);
     return response.data;
@@ -39,17 +50,16 @@ export const updatePackage = async (id: string, packageData: any) => {
   }
 };
 
-export const deletePackage = async (id: string) => {
+export const deletePackage = async (id: string): Promise<void> => {
   try {
-    const response = await apiClient.delete(`/package/${id}/delete`);
-    return response.data;
+    await apiClient.delete(`/package/${id}/delete`);
   } catch (error) {
     console.error(`Error deleting package with id ${id}:`, error);
     throw error;
   }
 };
 
-export const processPackage = async (id: string) => {
+export const processPackage = async (id: string): Promise<Package> => {
   try {
     const response = await apiClient.put(`/package/${id}/process`);
     return response.data;
