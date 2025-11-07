@@ -33,8 +33,14 @@ const columns = [
   {
     data: 'status',
     title: 'Status',
-    render: (data: 'OPEN' | 'CLOSED') =>
-      `<span class="badge ${data === 'OPEN' ? 'text-bg-success' : 'text-bg-danger'}">${data}</span>`
+    // Gunakan render function di sini
+    render: function(data, type, row) {
+      if (type === 'display') {
+        const variant = data === 'Pending' ? 'warning' : 'success';
+        return `<span class="badge text-bg-${variant}">${data}</span>`;
+      }
+      return data;
+    }
   },
   {
     data: 'price',
@@ -87,13 +93,7 @@ onMounted(fetchPackages);
         :data="packages"
         :options="dtOptions"
         class="table table-striped table-hover"
-        width="100%"
-      >
-        <template #column-1="slotProps">
-          <BBadge :variant="slotProps.data === 'PENDING' ? 'warning' : 'success'">
-            {{ slotProps.data === 'PENDING' ? 'Pending' : 'Processed' }}
-          </BBadge>
-        </template>
+        width="100%">
         <template #column-4="slotProps">
           <BButton size="sm" variant="info" @click="viewPackage(slotProps.cellData)">
             View

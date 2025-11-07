@@ -127,6 +127,14 @@ onMounted(fetchPackage);
 
     <div v-else-if="packageData">
 
+      <BButton
+        variant="outline-secondary"
+        to="/packages"
+        class="mb-3"
+      >
+        &larr; Back to Packages List
+      </BButton>
+
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">{{ packageData.packageName }}</h1>
         <div v-if="packageData.status === 'Pending'">

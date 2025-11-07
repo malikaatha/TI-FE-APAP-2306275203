@@ -19,14 +19,14 @@ export const addActivityToPlan = async (planId: string, data: any) => {
     }
 };
 
-export const updateOrderedQuantity = async (oqId: string, data: any) => {
-    try {
-        const response = await apiClient.put(`/ordered-activities/${oqId}/edit`, data);
-        return response.data;
-    } catch (error) {
-        console.error(`Error updating ordered quantity ${oqId}:`, error);
-        throw error;
-    }
+export const updateOrderedQuantity = async (oqId: string, data: { orderedQuota: number }) => {
+  try {
+    const response = await apiClient.put(`/ordered-activities/${oqId}/edit`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating ordered quantity ${oqId}:`, error);
+    throw error;
+  }
 };
 
 export const removeActivityFromPlan = async (oqId: string) => {
