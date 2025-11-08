@@ -35,9 +35,10 @@ const activityTypes = [
 
 const locations = [
   { value: null, text: 'Please select a location' },
-  { value: 'Jakarta (Provinsi)', text: 'Jakarta (Provinsi)' },
+  { value: 'DKI Jakarta (Provinsi)', text: 'DKI Jakarta (Provinsi)' },
   { value: 'Bali (Provinsi)', text: 'Bali (Provinsi)' },
   { value: 'Jawa Barat (Provinsi)', text: 'Jawa Barat (Provinsi)' },
+  { value: 'Yogyakarta (Provinsi)', text: 'Yogyakarta (Provinsi)' },
   { value: 'Kota Denpasar', text: 'Kota Denpasar' }
 ];
 
