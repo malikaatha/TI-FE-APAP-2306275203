@@ -5,98 +5,57 @@ on:
     branches:
       - main
 
-env:
-  DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
-  IMAGE_TAG: ${{ github.sha }}
-
 jobs:
-
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          node-version: 20
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Vue app
-        run: npm run build
-
-      - name: Upload dist as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-files
-          path: dist/
-          retention-days: 1
-
-
-  docker-push:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-
-      - name: Login to Docker Hub 
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Build Docker image
+      - name: Build and Push Docker Image
         run: |
+          # Di sini kuncinya. Kita paksa variabel masuk sebagai build-arg
           docker build \
-            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
-            -t $DOCKER_IMAGE_NAME:$IMAGE_TAG .
-
-      - name: Push Docker image
-        run: docker push $DOCKER_IMAGE_NAME:$IMAGE_TAG
+            --build-arg VITE_API_URL="${{ secrets.VITE_API_URL }}" \
+            -t ${{ secrets.DOCKER_IMAGE_NAME }}:${{ github.sha }} .
+          
+          docker push ${{ secrets.DOCKER_IMAGE_NAME }}:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: docker-push
-
+    needs: build-and-push
+    
     steps:
-      - name: Checkout again
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup SSH client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ssh
-
-      - name: Setup SSH key
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Replace image tag in deployment.yaml
-        run: sed "s|REPLACE_ME_TAG|$IMAGE_TAG|g" k8s/deployment.yaml > deployment.yaml
-
-      - name: Transfer k8s files to EC2
+      - name: Deploy to EC2
         run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app/k8s"
-          scp deployment.yaml \
-              k8s/service.yaml \
-              k8s/ingress.yaml \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/k8s/
-
-      - name: Apply Kubernetes manifests on k3s
-        run: |
+          # Ganti tag di deployment.yaml
+          sed -i "s|REPLACE_ME_TAG|${{ github.sha }}|g" k8s/deployment.yaml
+          
+          # Buat folder di server (jaga-jaga belom ada)
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app/k8s/fe"
+          
+          # Kirim file
+          scp k8s/deployment.yaml k8s/service.yaml k8s/ingress.yaml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/k8s/fe/
+          
+          # Apply k8s
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
-            sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f ~/app/k8s/deployment.yaml &&
-            sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f ~/app/k8s/service.yaml &&
-            sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f ~/app/k8s/ingress.yaml
+            sudo k3s kubectl apply -f ~/app/k8s/fe/deployment.yaml &&
+            sudo k3s kubectl apply -f ~/app/k8s/fe/service.yaml &&
+            sudo k3s kubectl apply -f ~/app/k8s/fe/ingress.yaml
           "
