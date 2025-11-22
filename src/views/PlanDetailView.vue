@@ -255,7 +255,7 @@ onMounted(fetchPlan);
             <strong>Selected Activity Details:</strong><br>
             Name: {{ selectedActivityDetails.activityName }}<br>
             Price: Rp {{ selectedActivityDetails.price }}<br>
-            Capacity: {{ selectedActivityDetails.capacity }}
+            Capacity: {{ selectedActivityDetails.capacity }} 
           </small>
         </div>
         <BFormGroup label="Ordered Quantity *" class="mt-3">
