@@ -1,7 +1,11 @@
 import axios from 'axios';
 import type { Package, CreatePackageDto, UpdatePackageDto } from '@/types/package.types';
 
-const API_URL = 'http://localhost:8080';
+const apiClient = axios.create({
+  // Vite akan otomatis ganti ini sesuai environment variable saat build
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  headers: { ... }
+});
 
 const apiClient = axios.create({
   baseURL: API_URL,
