@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tour-package-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tour-package-fe
+  template:
+    metadata:
+      labels:
+        app: tour-package-fe
+    spec:
+      containers:
+        - name: vue-container
+          # Tag akan diganti otomatis oleh script pipeline CI/CD (REPLACE_ME_TAG)
+          image: malikaatha/tour-package-fe:REPLACE_ME_TAG
+          ports:
+            - containerPort: 80
