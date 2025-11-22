@@ -56,7 +56,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            "http://2306275203-be.hafizmuh.site"
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
             -t $DOCKER_IMAGE_NAME:$IMAGE_TAG .
 
       - name: Push Docker image
