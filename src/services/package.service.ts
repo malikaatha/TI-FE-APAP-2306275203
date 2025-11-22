@@ -2,16 +2,8 @@ import axios from 'axios';
 import type { Package, CreatePackageDto, UpdatePackageDto } from '@/types/package.types';
 
 const apiClient = axios.create({
-  // Vite akan otomatis ganti ini sesuai environment variable saat build
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
-  headers: { ... }
-});
-
-const apiClient = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 });
 
 export const createPackage = async (packageData: CreatePackageDto): Promise<Package> => {
