@@ -50,7 +50,7 @@ const fetchPackage = async () => {
     packageData.value = response.data; // Sesuaikan jika perlu, lihat catatan di atas
     newPlanForm.startDate = packageData.value.startDate.slice(0, 16);
     newPlanForm.endDate = packageData.value.endDate.slice(0, 16);
-  } catch (err: any)
+  } catch (err: any){
     error.value = `Failed to load package data: ${err.response?.data?.message || err.message}`;
   } finally {
     isLoading.value = false;
