@@ -19,6 +19,7 @@ const dtOptions = {
   dom: 'Bfrtip',
   pageLength: 10,
   responsive: true,
+  order: [],
   language: {
     lengthMenu: 'Display _MENU_ records per page',
     zeroRecords: 'No records found',
