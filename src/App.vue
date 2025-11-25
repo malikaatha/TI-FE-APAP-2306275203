@@ -6,12 +6,16 @@ import { BNavbar, BNavbarBrand, BContainer, BNavbarNav, BNavItem } from 'bootstr
 <template>
   <div>
     <BNavbar toggleable="lg" type="dark" variant="primary">
-      <BNavbarBrand to="/">TravelAPAP</BNavbarBrand>
+      <BContainer>
+        <BNavbarBrand to="/">TravelAPAP</BNavbarBrand>
 
-      <BNavbarNav>
-        <BNavItem to="/packages">Packages</BNavItem>
-        <BNavItem to="/statistics">Statistics</BNavItem>
-      </BNavbarNav>
+        <BNavbarNav>
+          <BNavItem to="/packages">Packages</BNavItem>
+          <BNavItem to="/activities">Activities</BNavItem>
+          <BNavItem to="/loyalty/coupons">Loyalty</BNavItem>
+          <BNavItem to="/statistics">Statistics</BNavItem>
+        </BNavbarNav>
+      </BContainer>
     </BNavbar>
 
     <BContainer class="mt-4">
@@ -19,3 +23,9 @@ import { BNavbar, BNavbarBrand, BContainer, BNavbarNav, BNavItem } from 'bootstr
     </BContainer>
   </div>
 </template>
+
+<style scoped>
+.navbar-brand {
+  font-weight: bold;
+}
+</style>
