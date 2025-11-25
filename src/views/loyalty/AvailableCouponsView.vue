@@ -6,7 +6,7 @@ import {
   getCustomerPoints,
   purchaseCoupon
 } from '@/services/loyalty.service';
-import type { Coupon } from '@/types/loyalty.types';
+import type { Coupon } from '@/interfaces/loyalty.interface';
 import {
   BContainer, BRow, BCol, BCard, BButton, BBadge, BSpinner, BAlert, BModal, BFormInput, BFormGroup
 } from 'bootstrap-vue-next';

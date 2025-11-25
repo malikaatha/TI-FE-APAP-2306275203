@@ -5,7 +5,7 @@ import type {
   LoyaltyPoints,
   CreateCouponRequest,
   PurchaseCouponRequest
-} from '@/types/loyalty.types';
+} from '@/interfaces/loyalty.interface';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",

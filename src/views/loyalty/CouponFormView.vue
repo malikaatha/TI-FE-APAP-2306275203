@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { createCoupon, updateCoupon, getAvailableCoupons } from '@/services/loyalty.service';
-import type { Coupon } from '@/types/loyalty.types';
+import type { Coupon } from '@/interfaces/loyalty.interface';
 import {
   BContainer, BCard, BForm, BFormGroup, BFormInput, BFormTextarea, BButton, BAlert, BSpinner
 } from 'bootstrap-vue-next';

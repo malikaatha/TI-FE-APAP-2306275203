@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { getPurchasedCoupons } from '@/services/loyalty.service';
-import type { PurchasedCoupon } from '@/types/loyalty.types';
+import type { PurchasedCoupon } from '@/interfaces/loyalty.interface';
 import { BContainer, BButton, BSpinner, BAlert, BBadge } from 'bootstrap-vue-next';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
