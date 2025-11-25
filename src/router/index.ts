@@ -83,7 +83,27 @@ const router = createRouter({
       path: '/loyalty/edit/:id',
       name: 'loyalty-edit',
       component: () => import('../views/loyalty/CouponFormView.vue')
-    }
+    },
+        {
+      path: '/activities',
+      name: 'activity-list',
+      component: () => import('../views/ActivityListView.vue')
+    },
+    {
+      path: '/activities/create',
+      name: 'activity-create',
+      component: () => import('../views/ActivityFormView.vue')
+    },
+    {
+      path: '/activities/:id',
+      name: 'activity-detail',
+      component: () => import('../views/ActivityDetailView.vue')
+    },
+    {
+      path: '/activities/:id/edit',
+      name: 'activity-edit',
+      component: () => import('../views/ActivityFormView.vue')
+    },
   ]
 })
 
