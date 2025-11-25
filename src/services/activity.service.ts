@@ -17,27 +17,27 @@ export const getFilteredActivities = async (planId: string) => {
 };
 
 export const getAllActivities = async (): Promise<Activity[]> => {
-  const response = await apiClient.get('/activity'); // Sesuaikan endpoint BE
+  const response = await apiClient.get('/activities');
   return response.data;
 };
 
 export const getActivityById = async (id: string): Promise<Activity> => {
-  const response = await apiClient.get(`/activity/${id}`);
+  const response = await apiClient.get(`/activities/${id}`);
   return response.data;
 };
 
 export const createActivity = async (data: CreateActivityRequest): Promise<Activity> => {
-  const response = await apiClient.post('/activity/create', data);
+  const response = await apiClient.post('/activities/create', data);
   return response.data;
 };
 
 export const updateActivity = async (id: string, data: CreateActivityRequest): Promise<Activity> => {
-  const response = await apiClient.put(`/activity/${id}/update`, data);
+  const response = await apiClient.put(`/activities/${id}/update`, data);
   return response.data;
 };
 
 export const deleteActivity = async (id: string): Promise<void> => {
-  await apiClient.delete(`/activity/${id}/delete`);
+  await apiClient.delete(`/activities/${id}/delete`);
 };
 
 export const LOCATION_OPTIONS = [
