@@ -63,6 +63,26 @@ const router = createRouter({
       path: '/statistics',
       name: 'statistics',
       component: () => import('../views/StatisticsView.vue')
+    },
+        {
+      path: '/loyalty/coupons',
+      name: 'loyalty-coupons',
+      component: () => import('../views/loyalty/AvailableCouponsView.vue')
+    },
+    {
+      path: '/loyalty/my-coupons',
+      name: 'loyalty-my-coupons',
+      component: () => import('../views/loyalty/PurchasedCouponsView.vue')
+    },
+    {
+      path: '/loyalty/create',
+      name: 'loyalty-create',
+      component: () => import('../views/loyalty/CouponFormView.vue')
+    },
+    {
+      path: '/loyalty/edit/:id',
+      name: 'loyalty-edit',
+      component: () => import('../views/loyalty/CouponFormView.vue')
     }
   ]
 })
