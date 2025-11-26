@@ -10,7 +10,7 @@
     "build": "vite build",
     "build-only": "vite build",
     "preview": "vite preview",
-    "build-only": "vite build",
+    "dev": "vite",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/"
