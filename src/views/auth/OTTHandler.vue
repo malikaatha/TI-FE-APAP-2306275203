@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { exchangeTicket } from '@/services/auth.service';
 import { BSpinner } from 'bootstrap-vue-next';
 
 const route = useRoute();
-const router = useRouter();
 
 onMounted(async () => {
   const ticket = route.query.ticket as string;
@@ -17,20 +16,22 @@ onMounted(async () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      router.push('/');
+      window.location.href = '/';
+
     } catch (e) {
+      console.error(e);
       alert('Login Failed');
-      router.push('/');
+      window.location.href = '/';
     }
   } else {
-    router.push('/');
+    window.location.href = '/';
   }
 });
 </script>
 
 <template>
   <div class="text-center mt-5">
-    <BSpinner />
-    <p>Logging in...</p>
+    <BSpinner variant="primary" />
+    <p class="mt-2">Verifying Login...</p>
   </div>
 </template>
