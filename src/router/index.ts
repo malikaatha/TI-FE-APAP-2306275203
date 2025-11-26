@@ -104,6 +104,11 @@ const router = createRouter({
       name: 'activity-edit',
       component: () => import('../views/ActivityFormView.vue')
     },
+    {
+      path: '/auth/ott',
+      name: 'auth-ott',
+      component: () => import('../views/auth/OTTHandler.vue')
+    }
   ]
 })
 
