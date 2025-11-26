@@ -110,6 +110,6 @@ const router = createRouter({
       component: () => import('../views/auth/OTTHandler.vue')
     }
   ]
-})
+}) 
 
 export default router
