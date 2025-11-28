@@ -17,15 +17,18 @@ const checkLoginStatus = () => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
 
-  if (token && userStr) {
+  if (token && userStr && userStr !== 'undefined') {
     isLoggedIn.value = true;
     try {
       const user = JSON.parse(userStr);
       // Sesuaikan field ini dengan respon API temanmu
       username.value = user.username || user.nama || 'User';
-      userRole.value = user.role || '';
+      userRole.value = user.roleName || user.role || '';
     } catch (e) {
       console.error("Error parsing user data", e);
+      isLoggedIn.value = false;
+      username.value = '';
+      userRole.value = '';
     }
   } else {
     isLoggedIn.value = false;

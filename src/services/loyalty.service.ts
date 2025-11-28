@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './api';
 import type {
   Coupon,
   PurchasedCoupon,
@@ -6,11 +6,6 @@ import type {
   CreateCouponRequest,
   PurchaseCouponRequest
 } from '@/interfaces/loyalty.interface';
-
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
-  headers: { 'Content-Type': 'application/json' }
-});
 
 // PBI-FE-L1: Get All Available Coupons
 export const getAvailableCoupons = async (): Promise<Coupon[]> => {

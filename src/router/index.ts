@@ -127,8 +127,8 @@ router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
 
   if (to.meta.requiresAuth && !token) {
-    // Redirect to SSO login - login() will handle returnUrl
-    login()
+    // Redirect to SSO login - pass the intended destination
+    login(to.fullPath)
     return
   }
 
